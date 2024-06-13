@@ -53,6 +53,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         sharedPreferences.edit().putBoolean("notifications_enabled", newStatus).apply()
     }
 
+
     fun logout() {
         auth.signOut()
     }
@@ -60,22 +61,22 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun updateWeight(newWeight: String) {
         _weight.value = newWeight
         sharedPreferences.edit().putString("weight", newWeight).apply()
-        // You can also update the weight in Firestore here
-        updateUserProfileData(mapOf("beratBadan" to newWeight))
+        // Update the weight in Firestore
+        updateUserProfileData(mapOf("weight" to newWeight))
     }
 
     fun updateHeight(newHeight: String) {
         _height.value = newHeight
         sharedPreferences.edit().putString("height", newHeight).apply()
-        // You can also update the height in Firestore here
-        updateUserProfileData(mapOf("tinggiBadan" to newHeight))
+        // Update the height in Firestore
+        updateUserProfileData(mapOf("height" to newHeight))
     }
 
     fun updateBloodType(newBloodType: String) {
         _bloodType.value = newBloodType
         sharedPreferences.edit().putString("blood_type", newBloodType).apply()
-        // You can also update the blood type in Firestore here
-        updateUserProfileData(mapOf("golonganDarah" to newBloodType))
+        // Update the blood type in Firestore
+        updateUserProfileData(mapOf("blood_type" to newBloodType))
     }
 
     private fun updateUserProfileData(updatedData: Map<String, Any>) {

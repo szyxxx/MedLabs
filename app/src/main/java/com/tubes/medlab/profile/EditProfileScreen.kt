@@ -5,11 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +17,10 @@ import androidx.navigation.NavController
 @Composable
 fun EditProfileScreen(navController: NavController) {
     val viewModel: ProfileViewModel = viewModel()
+    var newWeight by remember { mutableStateOf("") }
+    var newHeight by remember { mutableStateOf("") }
+    var newBloodType by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -37,37 +37,33 @@ fun EditProfileScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Customize form fields based on editType
-            Text(text = "Edit Profile", style = MaterialTheme.typography.displayLarge)
+            // Form fields for editing weight, height, and blood type
+            EditableField("Berat Badan", "Masukkan berat badan baru", value = newWeight, onValueChange = { newWeight = it })
+            EditableField("Tinggi Badan", "Masukkan tinggi badan baru", value = newHeight, onValueChange = { newHeight = it })
+            EditableField("Golongan Darah", "Masukkan golongan darah baru", value = newBloodType, onValueChange = { newBloodType = it })
 
-            // Example form field for editing weight
-            EditableField("Berat Badan", "Masukkan berat badan baru", onSave = { newWeight ->
-                viewModel.updateWeight(newWeight)
-                navController.popBackStack()
-            })
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Example form field for editing height
-            EditableField("Tinggi Badan", "Masukkan tinggi badan baru", onSave = { newHeight ->
-                viewModel.updateHeight(newHeight)
-                navController.popBackStack()
-            })
-
-            // Example form field for editing blood type
-            EditableField("Golongan Darah", "Masukkan golongan darah baru", onSave = { newBloodType ->
-                viewModel.updateBloodType(newBloodType)
-                navController.popBackStack()
-            })
+            Button(
+                onClick = {
+                    if (newWeight.isNotEmpty()) viewModel.updateWeight(newWeight)
+                    if (newHeight.isNotEmpty()) viewModel.updateHeight(newHeight)
+                    if (newBloodType.isNotEmpty()) viewModel.updateBloodType(newBloodType)
+                    navController.popBackStack()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Simpan")
+            }
         }
     }
 }
 
 @Composable
-fun EditableField(title: String, hint: String, onSave: (String) -> Unit) {
-    var value by remember { mutableStateOf("") }
-
+fun EditableField(title: String, hint: String, value: String, onValueChange: (String) -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -75,15 +71,9 @@ fun EditableField(title: String, hint: String, onSave: (String) -> Unit) {
         Text(text = title, style = MaterialTheme.typography.bodyMedium)
         OutlinedTextField(
             value = value,
-            onValueChange = { value = it },
+            onValueChange = onValueChange,
             label = { Text(hint) },
             modifier = Modifier.padding(vertical = 8.dp)
         )
-        Button(
-            onClick = { onSave(value) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Simpan")
-        }
     }
 }

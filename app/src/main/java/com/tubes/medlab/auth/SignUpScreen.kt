@@ -100,7 +100,7 @@ private fun saveUserDetails(auth: FirebaseAuth, email: String, name: String) {
 
     val db = Firebase.firestore
     uid?.let {
-        db.collection("users").document(uid).set(userData)
+        db.collection("medlabs-$uid").document(uid).set(userData)
             .addOnSuccessListener {
                 // Handle success
             }

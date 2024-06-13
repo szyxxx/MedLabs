@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.work.runtime.ktx)
     //implementation(libs.androidx.material3.android)
 //    implementation(libs.androidx.material3.android)
     testImplementation("junit:junit:4.13.2")

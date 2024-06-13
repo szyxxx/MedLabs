@@ -1,3 +1,4 @@
+// DashboardScreen.kt
 package com.tubes.medlab.dashboard
 
 import android.os.Build
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.tubes.medlab.component.BottomNavBar
+import com.tubes.medlab.profile.ProfileViewModel
 import com.tubes.medlab.schedule.ScheduleViewModel
 import com.tubes.medlab.schedule.Schedule
 import java.time.LocalDate
@@ -30,8 +33,11 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(navController: NavController) {
-    val viewModel: ScheduleViewModel = viewModel()
-    val schedulesWithTime by viewModel.schedulesWithTime.collectAsState()
+    val scheduleViewModel: ScheduleViewModel = viewModel()
+    val schedulesWithTime by scheduleViewModel.schedulesWithTime.collectAsState()
+
+    val profileViewModel: ProfileViewModel = viewModel()
+    val userName by profileViewModel.userName.observeAsState("Unknown User")
 
     Scaffold(
         bottomBar = {
@@ -39,7 +45,7 @@ fun DashboardScreen(navController: NavController) {
         }
     ) { innerPadding ->
         Box(
-            modifier = Modifier.padding(16.dp) // Tambahkan margin di sini
+            modifier = Modifier.padding(16.dp)
         ) {
             LazyColumn(
                 contentPadding = innerPadding,
@@ -55,8 +61,8 @@ fun DashboardScreen(navController: NavController) {
                         Column(
                             modifier = Modifier.padding(16.dp)
                         ) {
-                            UserSection(userName = "John Doe")
-                            Spacer(modifier = Modifier.height(16.dp)) // Spasi antara bagian
+                            UserSection(userName = userName)
+                            Spacer(modifier = Modifier.height(16.dp))
                             CalendarSection()
                         }
                     }
@@ -101,10 +107,8 @@ fun CalendarSection() {
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Ambil tanggal hari ini
         val today = LocalDate.now()
 
-        // Hari-hari dalam seminggu
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -115,7 +119,6 @@ fun CalendarSection() {
             }
         }
 
-        // Tanggal dalam seminggu
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -130,10 +133,10 @@ fun CalendarSection() {
                         textAlign = TextAlign.Center
                     )
                     if (day.dayOfMonth == today.dayOfMonth) {
-                        Spacer(modifier = Modifier.height(4.dp)) // Add spacing between the text and the circle
+                        Spacer(modifier = Modifier.height(4.dp))
                         CircleIndicator(day = day)
                     }
-                    Spacer(modifier = Modifier.height(4.dp)) // Add spacing between the text and the next item
+                    Spacer(modifier = Modifier.height(4.dp))
                 }
             }
         }
@@ -200,7 +203,6 @@ fun ScheduleCard(schedule: Schedule, time: String) {
             Text(text = "${schedule.medicineName}", style = MaterialTheme.typography.bodyMedium)
             Text(text = "Tipe Obat: ${schedule.medicineType}", style = MaterialTheme.typography.bodyMedium)
             Text(text = "Waktu: $time", style = MaterialTheme.typography.bodyMedium)
-            // Tambahkan elemen lain dari schedule yang ingin Anda tampilkan di sini
         }
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -163,35 +164,39 @@ object SharedPreferenceUtil {
     private const val PREF_NAME = "medlab_prefs"
     private const val KEY_LOGGED_IN = "logged_in"
     private const val KEY_UID = "uid"
-    private const val KEY_HAS_PERMISSION = "has_permission"
+    private const val KEY_NOTIFICATION_PERMISSION = "notification_permission"
+
+    private fun getSharedPreferences(context: Context): SharedPreferences {
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    }
 
     fun isLoggedIn(context: Context): Boolean {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(context)
         return prefs.getBoolean(KEY_LOGGED_IN, false)
     }
 
     fun getUid(context: Context): String? {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(context)
         return prefs.getString(KEY_UID, null)
     }
 
     fun setUid(context: Context, uid: String) {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(context)
         prefs.edit().putString(KEY_UID, uid).apply()
     }
 
     fun setLoggedIn(context: Context, loggedIn: Boolean) {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(context)
         prefs.edit().putBoolean(KEY_LOGGED_IN, loggedIn).apply()
     }
 
     fun hasNotificationPermission(context: Context): Boolean {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        return prefs.getBoolean(KEY_HAS_PERMISSION, false)
+        val prefs = getSharedPreferences(context)
+        return prefs.getBoolean(KEY_NOTIFICATION_PERMISSION, false)
     }
 
     fun setNotificationPermission(context: Context, hasPermission: Boolean) {
-        val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_HAS_PERMISSION, hasPermission).apply()
+        val prefs = getSharedPreferences(context)
+        prefs.edit().putBoolean(KEY_NOTIFICATION_PERMISSION, hasPermission).apply()
     }
 }

@@ -1,14 +1,17 @@
 package com.tubes.medlab.schedule
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -76,7 +79,7 @@ class ScheduleViewModel : ViewModel() {
         val currentDate = Calendar.getInstance().time
         return schedules.filter { it.dateStart.isNotEmpty() }.minByOrNull {
             val scheduleDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.dateStart)
-            scheduleDate?.time ?: Long.MAX_VALUE - currentDate.time
+            scheduleDate?.time ?: (Long.MAX_VALUE - currentDate.time)
         }
     }
 
@@ -114,10 +117,10 @@ class ScheduleViewModel : ViewModel() {
         for (i in 0 until repetition) {
             // Add current time to list
             val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-            times.add(timeFormat.format(currentTime.time))
+//            times.add(timeFormat.format(currentTime.time))
 
             // Increment time by 5 hours
-            currentTime.add(Calendar.HOUR_OF_DAY, 5)
+            currentTime.add(Calendar.HOUR_OF_DAY, 8)
 
             // Check if time falls between 22:00 and 06:59 and adjust accordingly
             val hour = currentTime.get(Calendar.HOUR_OF_DAY)
@@ -191,4 +194,60 @@ object FirebaseFirestoreUtil {
             emptyList()
         }
     }
+
+    fun updateScheduleAfterNotificationClick(scheduleId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userScheduleCollection = getUserScheduleCollection(userId)
+
+        userScheduleCollection.document(scheduleId).get().addOnSuccessListener { document ->
+            val schedule = document.toObject(Schedule::class.java)
+            schedule?.let {
+                val updatedTimeSchedule = it.timeSchedule.drop(1) // Hapus timeSchedule pertama
+                val updatedDoseQuantity = it.doseQuantity - 1
+
+                val updatedSchedule = it.copy(
+                    timeSchedule = updatedTimeSchedule,
+                    doseQuantity = updatedDoseQuantity
+                )
+
+                userScheduleCollection.document(scheduleId).set(updatedSchedule)
+            }
+        }
+    }
 }
+class ScheduleRepository {
+
+    private val db = FirebaseFirestore.getInstance()
+
+    fun getSchedule(scheduleId: String, userId: String, onResult: (Schedule?) -> Unit) {
+        val docRef = db.collection("medlabs-$userId").document(scheduleId)
+        docRef.get().addOnSuccessListener { document ->
+            if (document != null && document.exists()) {
+                val schedule = document.toObject(Schedule::class.java)
+                Log.d("ScheduleRepository", "Fetched schedule for id $scheduleId: $schedule")
+                onResult(schedule)
+            } else {
+                Log.d("ScheduleRepository", "No such document for id $scheduleId")
+                onResult(null)
+            }
+        }.addOnFailureListener { exception ->
+            Log.d("ScheduleRepository", "Failed to fetch document: $exception")
+            onResult(null)
+        }
+    }
+
+    fun updateSchedule(schedule: Schedule, userId: String) {
+        val docRef = db.collection("medlabs-$userId").document(schedule.scheduleId)
+        docRef.set(schedule)
+            .addOnSuccessListener { Log.d("ScheduleRepository", "DocumentSnapshot successfully updated!") }
+            .addOnFailureListener { e -> Log.w("ScheduleRepository", "Error updating document", e) }
+    }
+
+    fun deleteSchedule(scheduleId: String, userId: String) {
+        val docRef = db.collection("medlabs-$userId").document(scheduleId)
+        docRef.delete()
+            .addOnSuccessListener { Log.d("ScheduleRepository", "DocumentSnapshot successfully deleted!") }
+            .addOnFailureListener { e -> Log.w("ScheduleRepository", "Error deleting document", e) }
+    }
+}
+
